@@ -1,0 +1,4 @@
+xcn_cuda/dist
+xcn_cuda/build
+xcn_cuda/xcn_cuda.egg-info
+*.local
