@@ -40,10 +40,10 @@ std::vector<torch::Tensor> bcn_cuda_forward(
 
 std::vector<torch::Tensor> bcn_cuda_backward(
     torch::Tensor grad,
-    torch::Tensor X,
-    torch::Tensor weights,
-    torch::Tensor x_mean,
-    torch::Tensor inv_std,
+    const torch::Tensor X,
+    const torch::Tensor weights,
+    const torch::Tensor x_mean,
+    const torch::Tensor inv_std,
     double clip,
     std::array<bool,3> grad_input_mask
     );
@@ -80,10 +80,10 @@ std::vector<torch::Tensor> bcn_forward(
 
 std::vector<torch::Tensor> bcn_backward(
     torch::Tensor grad,
-    torch::Tensor X,
-    torch::Tensor weights,
-    torch::Tensor x_mean,
-    torch::Tensor inv_std,
+    const torch::Tensor X,
+    const torch::Tensor weights,
+    const torch::Tensor x_mean,
+    const torch::Tensor inv_std,
     double clip) {
   CHECK_INPUT(grad);
   CHECK_INPUT(X);
@@ -157,10 +157,28 @@ std::vector<torch::Tensor> icn_backward(
     ans[2] = ans[2].view({b,c}).sum(0);
     return ans;
 }
+// std::string icn_backward_doc = "ICN backward (CUDA)\nargs:   grad_out, input, weight, save_mean, save_invstd, minl\nreturn: grad_input, grad_weight, grad_bias\n";
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
-  m.def("batch_forward", &bcn_forward, "BCN forward (CUDA)");
-  m.def("batch_backward", &bcn_backward, "BCN backward (CUDA)");
-  m.def("instance_forward", &icn_forward, "ICN forward (CUDA)");
-  m.def("instance_backward", &icn_backward, "ICN backward (CUDA)");
+m.doc() = "X Condition Norm in CUDA";
+
+m.def("batch_forward", &bcn_forward, \
+"BCN forward (CUDA)\n\
+args:   input, weight, bias, minl, epsilon\n\
+return: output, save_mean, save_invstd\n");
+
+m.def("batch_backward", &bcn_backward, \
+"BCN backward (CUDA)\n\
+args:   grad_out, input, weight, save_mean, save_invstd, minl\n\
+return: grad_input, grad_weight, grad_bias\n");
+
+m.def("instance_forward", &icn_forward, \
+"ICN forward (CUDA)\n\
+args:   input, weight, bias, minl, epsilon\n\
+return: output, save_mean, save_invstd\n");
+
+m.def("instance_backward", &icn_backward, \
+"ICN backward (CUDA)\n\
+args:   grad_out, input, weight, save_mean, save_invstd, minl\n\
+return: grad_input, grad_weight, grad_bias\n");
 }
